@@ -1,0 +1,39 @@
+TechConsult Pro - Business Overview
+
+Company: TechConsult Pro
+Industry: Software Consulting
+Founded: 2020
+
+Services:
+- Custom Web Application Development
+- Mobile App Development (iOS/Android)
+- System Integration Services
+- Database Design and Optimization
+- Cloud Migration Services
+
+Target Clients:
+- Small to Medium Businesses (10-500 employees)
+- Startups needing technical guidance
+- Established companies modernizing legacy systems
+
+Current Process:
+1. Initial consultation call
+2. Requirements gathering
+3. Proposal and quote
+4. Contract negotiation
+5. Project kickoff
+6. Development phases
+7. Testing and deployment
+8. Ongoing support
+
+Pain Points:
+- Lead tracking is manual
+- Follow-up reminders are inconsistent
+- Project status updates scattered across emails
+- Client communication history not centralized
+
+Goals:
+- Automate lead nurturing
+- Centralize client communications
+- Track project milestones
+- Improve conversion from lead to contract 

@@ -111,14 +111,18 @@ async def owner_chat(message: ChatMessage) -> ChatResponse:
         # Combine response parts
         full_response = crm_agent.combine_response_parts(response_parts)
         
-        # Check if pipeline is complete
+        # Check if pipeline is complete and extract payload
         is_complete = await crm_agent.is_pipeline_complete(session["session_id"])
         pipeline_payload = None
         
-        if is_complete:
-            # Extract pipeline payload
+        # Always try to extract pipeline payload for debugging
+        try:
             pipeline_payload = await crm_agent.extract_pipeline_payload(session["session_id"])
-            
+            print(f"🔧 Pipeline payload extracted: {pipeline_payload is not None}")
+        except Exception as e:
+            print(f"⚠️ Pipeline extraction error: {str(e)}")
+        
+        if is_complete and pipeline_payload:
             # Broadcast pipeline update via WebSocket
             await websocket_manager.broadcast_pipeline_update(pipeline_payload)
         
@@ -129,7 +133,7 @@ async def owner_chat(message: ChatMessage) -> ChatResponse:
             response=full_response,
             session_id=session["session_id"],
             pipeline_complete=is_complete,
-            pipeline_payload=pipeline_payload,
+            pipeline_payload=pipeline_payload.model_dump() if pipeline_payload else None,
             timestamp=datetime.now().isoformat()
         )
         
