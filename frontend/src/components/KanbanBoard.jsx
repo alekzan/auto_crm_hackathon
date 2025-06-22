@@ -1,10 +1,12 @@
 import React, { useState, useEffect } from 'react';
-import { Plus, Users, Target, ArrowRight } from 'lucide-react';
+import { Plus, Users, Target, ArrowRight, RefreshCw } from 'lucide-react';
 
 const KanbanBoard = ({ pipelineData }) => {
     const [stages, setStages] = useState([]);
     const [businessName, setBusinessName] = useState('');
     const [leads, setLeads] = useState([]);
+    const [isLoadingLeads, setIsLoadingLeads] = useState(false);
+    const [error, setError] = useState(null);
 
     useEffect(() => {
         console.log('🔍 KanbanBoard received pipelineData:', pipelineData);
@@ -34,46 +36,59 @@ const KanbanBoard = ({ pipelineData }) => {
 
             setStages(stageList);
 
-            // Initialize with some sample leads for demonstration
-            if (stageList.length > 0) {
-                const sampleLeads = [
-                    {
-                        id: 'lead-demo-1',
-                        name: 'Demo Patient #1',
-                        type: 'New Patient',
-                        email: 'patient1@demo.com',
-                        stage: 1,
-                        tags: ['new_patient', 'consultation_needed'],
-                        created_at: new Date().toISOString()
-                    },
-                    {
-                        id: 'lead-demo-2',
-                        name: 'Demo Patient #2',
-                        type: 'Existing Patient',
-                        email: 'patient2@demo.com',
-                        stage: 2,
-                        tags: ['returning_patient', 'treatment_plan'],
-                        created_at: new Date().toISOString()
-                    },
-                    {
-                        id: 'lead-demo-3',
-                        name: 'Demo Patient #3',
-                        type: 'New Patient',
-                        email: 'patient3@demo.com',
-                        stage: 1,
-                        tags: ['emergency', 'priority'],
-                        created_at: new Date().toISOString()
-                    }
-                ];
-                setLeads(sampleLeads);
-                console.log('📊 Initialized with sample leads:', sampleLeads);
-            }
+            // Fetch real lead data instead of using demo data
+            fetchLeads();
         } else {
             console.log('⚠️ No valid pipeline data received');
             setStages([]);
             setLeads([]);
         }
     }, [pipelineData]);
+
+    // Fetch leads when component mounts
+    useEffect(() => {
+        if (pipelineData && pipelineData.total_stages) {
+            fetchLeads();
+        }
+    }, []);
+
+    // Fetch real lead data from backend
+    const fetchLeads = async () => {
+        try {
+            setIsLoadingLeads(true);
+            setError(null);
+            console.log('🔄 Fetching leads from backend...');
+
+            const response = await fetch('http://localhost:8001/state/leads');
+            if (response.ok) {
+                const leadsData = await response.json();
+                console.log('📊 Leads data loaded:', leadsData);
+
+                // Validate and sanitize leads data
+                const sanitizedLeads = leadsData.map(lead => ({
+                    id: lead.session_id || lead.id || `lead-${Date.now()}`,
+                    name: lead.name || 'Unnamed Lead',
+                    type: lead.type || 'Lead',
+                    email: lead.email || '',
+                    stage: lead.stage || 1,
+                    user_tags: Array.isArray(lead.user_tags) ? lead.user_tags : [],
+                    created_at: lead.created_at || new Date().toISOString(),
+                    ...lead
+                }));
+
+                setLeads(sanitizedLeads);
+            } else {
+                console.log('⚠️ No leads data available yet');
+                setLeads([]);
+            }
+        } catch (error) {
+            console.error('❌ Error fetching leads:', error);
+            setError('Failed to load leads data');
+            setLeads([]);
+        } finally {
+            setIsLoadingLeads(false);
+        }
+    };
 
     const getLeadsForStage = (stageId) => {
         return leads.filter(lead => lead.stage === stageId);
@@ -82,7 +97,7 @@ const KanbanBoard = ({ pipelineData }) => {
     const moveLeadToStage = (leadId, newStage) => {
         setLeads(prevLeads =>
             prevLeads.map(lead =>
-                lead.id === leadId ? { ...lead, stage: newStage } : lead
+                (lead.id === leadId || lead.session_id === leadId) ? { ...lead, stage: newStage } : lead
             )
         );
     };
@@ -107,6 +122,11 @@ const KanbanBoard = ({ pipelineData }) => {
                     <Target className="w-12 h-12 text-gray-400 mx-auto mb-4" />
                     <h3 className="text-lg font-medium text-gray-900 mb-2">No Pipeline Available</h3>
                     <p className="text-gray-500">Create a CRM pipeline first to see the Kanban board.</p>
+                    {error && (
+                        <div className="mt-4 p-3 bg-red-50 border border-red-200 rounded-lg">
+                            <p className="text-sm text-red-700">Error: {error}</p>
+                        </div>
+                    )}
                     {pipelineData && (
                         <div className="mt-4 p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
                             <p className="text-sm text-yellow-700">
@@ -130,9 +150,20 @@ const KanbanBoard = ({ pipelineData }) => {
                         </h1>
                         <p className="text-sm text-gray-500">
                             {stages.length} stages • {leads.length} total leads
+                            {isLoadingLeads && <span className="ml-2 text-blue-600">• Loading...</span>}
                         </p>
                     </div>
                     <div className="flex items-center space-x-2">
+                        {/* Refresh Button */}
+                        <button
+                            onClick={fetchLeads}
+                            disabled={isLoadingLeads}
+                            className="flex items-center text-gray-600 hover:text-gray-900 bg-gray-100 hover:bg-gray-200 px-3 py-2 rounded-lg transition-colors disabled:opacity-50"
+                        >
+                            <RefreshCw className={`w-4 h-4 mr-2 ${isLoadingLeads ? 'animate-spin' : ''}`} />
+                            <span className="text-sm font-medium">Refresh</span>
+                        </button>
+
                         <div className="flex items-center text-green-600 bg-green-50 px-3 py-2 rounded-lg">
                             <div className="w-2 h-2 bg-green-600 rounded-full mr-2"></div>
                             <span className="text-sm font-medium">Pipeline Active</span>
@@ -174,7 +205,7 @@ const KanbanBoard = ({ pipelineData }) => {
                                         )}
 
                                         {/* Stage Tags */}
-                                        {stage.user_tags && stage.user_tags.length > 0 && (
+                                        {stage.user_tags && Array.isArray(stage.user_tags) && stage.user_tags.length > 0 && (
                                             <div className="flex flex-wrap gap-1 mt-2">
                                                 {stage.user_tags.map((tag, tagIndex) => (
                                                     <span
@@ -208,15 +239,15 @@ const KanbanBoard = ({ pipelineData }) => {
                                             className="bg-white rounded-lg shadow-sm border p-4 hover:shadow-md transition-shadow cursor-pointer"
                                         >
                                             <div className="flex items-start justify-between mb-2">
-                                                <h4 className="font-medium text-gray-900">{lead.name}</h4>
-                                                <span className="text-xs text-gray-500">{lead.type}</span>
+                                                <h4 className="font-medium text-gray-900">{lead.name || 'Unnamed Lead'}</h4>
+                                                <span className="text-xs text-gray-500">{lead.type || 'Lead'}</span>
                                             </div>
 
-                                            <p className="text-sm text-gray-600 mb-3">{lead.email}</p>
+                                            <p className="text-sm text-gray-600 mb-3">{lead.email || 'No email provided'}</p>
 
                                             {/* Lead Tags */}
                                             <div className="flex flex-wrap gap-1 mb-3">
-                                                {lead.tags.map((tag, tagIndex) => (
+                                                {(lead.user_tags || []).map((tag, tagIndex) => (
                                                     <span
                                                         key={tagIndex}
                                                         className="inline-block bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded"
@@ -229,7 +260,7 @@ const KanbanBoard = ({ pipelineData }) => {
                                             {/* Move Actions */}
                                             <div className="flex justify-between items-center">
                                                 <span className="text-xs text-gray-400">
-                                                    {new Date(lead.created_at).toLocaleDateString()}
+                                                    {lead.created_at ? new Date(lead.created_at).toLocaleDateString() : 'No date'}
                                                 </span>
 
                                                 <div className="flex space-x-1">

@@ -316,3 +316,14 @@ class StateManager:
     def get_session_state(self) -> Dict[str, Any]:
         """Get the complete session state"""
         return self.state.session_state 
+
+    async def get_ready_state(self) -> Optional[Dict[str, Any]]:
+        """Get the ready state (flattened session state) for the frontend"""
+        session_state = self.get_session_state()
+        
+        if session_state and session_state.get('pipeline_completed'):
+            print(f"📊 Ready state available with {session_state.get('total_stages', 0)} stages")
+            return session_state
+        else:
+            print("⚠️ No ready state available - pipeline not completed")
+            return None 

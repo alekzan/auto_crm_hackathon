@@ -1,19 +1,60 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Send, User, Bot, CheckCircle, AlertCircle, ArrowRight, Building, Phone, Mail } from 'lucide-react';
 
-const LeadChat = () => {
-    const [messages, setMessages] = useState([]);
+const LeadChat = ({ existingSession, existingMessages, onSessionCreated, onMessagesUpdate }) => {
+    const [messages, setMessages] = useState(existingMessages || []);
     const [inputMessage, setInputMessage] = useState('');
     const [isLoading, setIsLoading] = useState(false);
-    const [sessionInfo, setSessionInfo] = useState(null);
+    const [sessionInfo, setSessionInfo] = useState(existingSession || null);
     const [leadData, setLeadData] = useState(null);
-    const [isSessionCreated, setIsSessionCreated] = useState(false);
+    const [isSessionCreated, setIsSessionCreated] = useState(!!existingSession);
     const messagesEndRef = useRef(null);
 
-    // Initialize lead session on component mount
+    // Initialize lead session on component mount only if no existing session
     useEffect(() => {
-        createLeadSession();
-    }, []);
+        if (existingSession) {
+            console.log('🔄 Using existing lead session:', existingSession);
+            setSessionInfo(existingSession);
+            setIsSessionCreated(true);
+
+            // Add welcome message only if no existing messages
+            if (messages.length === 0 && (!existingMessages || existingMessages.length === 0)) {
+                const welcomeMessage = {
+                    id: Date.now(),
+                    sender: 'agent',
+                    content: `Welcome back to ${existingSession.business_name}! You're continuing in Stage ${existingSession.current_stage}: ${existingSession.current_stage_name}. How can I assist you today?`,
+                    timestamp: new Date().toISOString(),
+                    leadData: null
+                };
+                setMessages([welcomeMessage]);
+            }
+        } else {
+            createLeadSession();
+        }
+    }, [existingSession]);
+
+    // Update session info when existingSession changes
+    useEffect(() => {
+        if (existingSession && existingSession !== sessionInfo) {
+            setSessionInfo(existingSession);
+            setIsSessionCreated(true);
+        }
+    }, [existingSession]);
+
+    // Update messages when existingMessages prop changes
+    useEffect(() => {
+        if (existingMessages && existingMessages.length > 0) {
+            console.log('🔄 Loading existing messages:', existingMessages.length, 'messages');
+            setMessages(existingMessages);
+        }
+    }, [existingMessages]);
+
+    // Notify parent when messages change
+    useEffect(() => {
+        if (onMessagesUpdate && messages.length > 0) {
+            onMessagesUpdate(messages);
+        }
+    }, [messages, onMessagesUpdate]);
 
     useEffect(() => {
         scrollToBottom();
@@ -42,6 +83,11 @@ const LeadChat = () => {
             const sessionData = await response.json();
             setSessionInfo(sessionData);
             setIsSessionCreated(true);
+
+            // Notify parent component about session creation
+            if (onSessionCreated) {
+                onSessionCreated(sessionData);
+            }
 
             // Add welcome message
             setMessages([{

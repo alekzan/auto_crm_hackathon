@@ -326,56 +326,35 @@ async def upload_file(file: UploadFile = File(...), session_id: Optional[str] = 
 # State Management Endpoints
 @app.get("/state/pipeline")
 async def get_pipeline_state():
-    """Get the flattened pipeline state for Kanban board"""
+    """Get the current pipeline state for the frontend"""
     try:
-        # Try to get the complete session state first
-        session_state = state_manager.get_session_state()
+        # Get the ready state from state manager
+        ready_state = await state_manager.get_ready_state()
         
-        # If no session state, show error - user needs to complete pipeline first
-        if not session_state:
-            raise HTTPException(status_code=404, detail="No pipeline data available. Please complete the CRM setup first.")
-        
-        # Check if pipeline is completed - if we have biz_name and total_stages, pipeline is complete
-        pipeline_completed = False
-        if 'biz_name' in session_state and 'total_stages' in session_state:
-            pipeline_completed = True
-        elif 'pipeline' in session_state:
-            pipeline_completed = session_state['pipeline'].get('pipeline_completed', False)
-        
-        if not pipeline_completed:
-            raise HTTPException(status_code=404, detail="Pipeline not completed yet. Please complete the CRM setup first.")
-        
-        # Session state is already in the correct flattened format, return it directly
-        # Add any missing fields that the frontend expects
-        ready_state = dict(session_state)
-        
-        # Ensure we have the total_stages set correctly
-        if 'total_stages' not in ready_state or ready_state['total_stages'] == 0:
-            # Count stages by looking for stage_N_stage_name fields
-            stage_count = 0
-            for i in range(1, 10):  # Check up to 9 stages
-                if f'stage_{i}_stage_name' in ready_state:
-                    stage_count = i
-            ready_state['total_stages'] = stage_count
-        
-        # Ensure current stage info is populated
-        if 'current_stage_name' not in ready_state or not ready_state['current_stage_name']:
-            current_stage = ready_state.get('current_stage', 1)
-            ready_state['current_stage_name'] = ready_state.get(f'stage_{current_stage}_stage_name', '')
-            ready_state['current_stage_brief_goal'] = ready_state.get(f'stage_{current_stage}_brief_stage_goal', '')
-        
-        return ready_state
-        
-    except HTTPException:
-        raise
+        if ready_state and ready_state.get('pipeline_completed'):
+            print(f"📊 Returning pipeline state: {ready_state.get('biz_name')} with {ready_state.get('total_stages')} stages")
+            return ready_state
+        else:
+            print("⚠️ No completed pipeline found in ready state")
+            raise HTTPException(status_code=404, detail="No pipeline data available")
+            
     except Exception as e:
-        logger.error(f"Error getting pipeline state: {str(e)}")
-        raise HTTPException(status_code=500, detail=f"Error getting pipeline state: {str(e)}")
+        print(f"❌ Error getting pipeline state: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
 
 @app.get("/state/leads")
-async def get_leads():
-    """Get all leads data"""
-    return await state_manager.get_leads()
+async def get_leads_state():
+    """Get the current leads data for the KanbanBoard"""
+    try:
+        # Get leads from state manager
+        leads_data = await state_manager.get_leads()
+        
+        print(f"📊 Returning {len(leads_data)} leads for KanbanBoard")
+        return leads_data
+        
+    except Exception as e:
+        print(f"❌ Error getting leads state: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
 
 @app.get("/state/business")
 async def get_business_data():

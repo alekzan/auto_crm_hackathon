@@ -8,6 +8,8 @@ const Dashboard = () => {
     const [activeTab, setActiveTab] = useState('chat');
     const [pipelineData, setPipelineData] = useState(null);
     const [isLoading, setIsLoading] = useState(false);
+    const [leadSession, setLeadSession] = useState(null);
+    const [leadMessages, setLeadMessages] = useState([]);
 
     // Reset state function for MVP
     const resetState = async () => {
@@ -159,6 +161,18 @@ const Dashboard = () => {
         setActiveTab('kanban');
     };
 
+    // Handle lead session creation and persistence
+    const handleLeadSessionCreated = (sessionData) => {
+        console.log('💾 Storing lead session for persistence:', sessionData);
+        setLeadSession(sessionData);
+    };
+
+    // Handle lead messages updates
+    const handleLeadMessagesUpdate = (messages) => {
+        console.log('💬 Storing lead messages for persistence:', messages.length, 'messages');
+        setLeadMessages(messages);
+    };
+
     const tabs = [
         {
             id: 'chat',
@@ -285,13 +299,16 @@ const Dashboard = () => {
                 {activeTab === 'chat' && (
                     <CRMChat onPipelineComplete={handlePipelineComplete} />
                 )}
-
                 {activeTab === 'kanban' && (
                     <KanbanBoard pipelineData={pipelineData} />
                 )}
-
                 {activeTab === 'leadchat' && (
-                    <LeadChat />
+                    <LeadChat
+                        existingSession={leadSession}
+                        existingMessages={leadMessages}
+                        onSessionCreated={handleLeadSessionCreated}
+                        onMessagesUpdate={handleLeadMessagesUpdate}
+                    />
                 )}
             </div>
         </div>
