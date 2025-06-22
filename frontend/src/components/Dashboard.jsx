@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { MessageSquare, LayoutDashboard, RefreshCw, Users, RotateCcw, Target } from 'lucide-react';
+import { MessageSquare, LayoutDashboard, RefreshCw, Users, RotateCcw, Target, Sparkles } from 'lucide-react';
 import CRMChat from './CRMChat';
 import KanbanBoard from './KanbanBoard';
 import LeadChat from './LeadChat';
@@ -114,41 +114,51 @@ const Dashboard = () => {
             id: 'chat',
             name: 'CRM Builder',
             icon: MessageSquare,
-            description: 'Create your sales pipeline'
+            description: 'Create your sales pipeline',
+            gradient: 'from-blue-500 to-purple-600'
         },
         {
             id: 'kanban',
             name: 'Pipeline Board',
             icon: LayoutDashboard,
-            description: 'Manage leads and opportunities'
+            description: 'Manage leads and opportunities',
+            gradient: 'from-green-500 to-teal-600'
         },
         {
             id: 'leadchat',
             name: 'Lead Chat',
             icon: Users,
-            description: 'Experience the lead journey'
+            description: 'Experience the lead journey',
+            gradient: 'from-orange-500 to-red-600'
         }
     ];
 
     return (
-        <div className="h-screen flex flex-col bg-gray-50">
+        <div className="h-screen flex flex-col bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100">
             {/* Navigation Header */}
-            <div className="bg-white shadow-sm border-b">
-                <div className="px-6 py-4">
+            <div className="bg-white/90 backdrop-blur-xl shadow-lg border-b border-white/20">
+                <div className="px-8 py-6">
                     <div className="flex items-center justify-between">
-                        <div>
-                            <h1 className="text-2xl font-bold text-gray-900">AI-Powered CRM</h1>
-                            <p className="text-sm text-gray-500">
-                                Build and manage your custom sales pipeline
-                            </p>
+                        <div className="flex items-center space-x-4">
+                            <div className="flex items-center justify-center w-12 h-12 bg-gradient-to-br from-blue-600 to-purple-700 rounded-xl shadow-lg">
+                                <Sparkles className="w-6 h-6 text-white" />
+                            </div>
+                            <div>
+                                <h1 className="text-3xl font-bold bg-gradient-to-r from-slate-800 to-slate-600 bg-clip-text text-transparent">
+                                    AI-Powered CRM
+                                </h1>
+                                <p className="text-slate-600 font-medium">
+                                    Build and manage your custom sales pipeline
+                                </p>
+                            </div>
                         </div>
 
-                        <div className="flex items-center space-x-4">
+                        <div className="flex items-center space-x-3">
                             {/* Refresh Button */}
                             <button
                                 onClick={fetchPipelineData}
                                 disabled={isLoading}
-                                className="flex items-center px-3 py-2 text-sm text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-colors"
+                                className="flex items-center px-4 py-2.5 text-sm font-medium text-slate-600 hover:text-slate-900 bg-white/60 hover:bg-white/80 backdrop-blur-sm rounded-xl border border-white/30 hover:border-white/50 transition-all duration-200 shadow-sm hover:shadow-md"
                             >
                                 <RefreshCw className={`w-4 h-4 mr-2 ${isLoading ? 'animate-spin' : ''}`} />
                                 Refresh
@@ -157,27 +167,25 @@ const Dashboard = () => {
                             {/* Reset State Button */}
                             <button
                                 onClick={resetState}
-                                className="flex items-center px-3 py-2 text-sm text-red-600 hover:text-red-800 hover:bg-red-50 rounded-lg transition-colors"
+                                className="flex items-center px-4 py-2.5 text-sm font-medium text-red-600 hover:text-red-700 bg-red-50/60 hover:bg-red-50/80 backdrop-blur-sm rounded-xl border border-red-200/50 hover:border-red-300/70 transition-all duration-200 shadow-sm hover:shadow-md"
                             >
                                 <RotateCcw className="w-4 h-4 mr-2" />
                                 Reset State
                             </button>
 
-                            {/* Debug buttons removed - functionality is now automatic */}
-
                             {/* Pipeline Status */}
                             {pipelineData && (
-                                <div className="flex items-center text-green-600 bg-green-50 px-3 py-2 rounded-lg">
-                                    <div className="w-2 h-2 bg-green-600 rounded-full mr-2"></div>
-                                    <span className="text-sm font-medium">Pipeline Active</span>
+                                <div className="flex items-center bg-gradient-to-r from-emerald-50 to-green-50 text-emerald-700 px-4 py-2.5 rounded-xl border border-emerald-200/50 shadow-sm">
+                                    <div className="w-2 h-2 bg-emerald-500 rounded-full mr-3 animate-pulse"></div>
+                                    <span className="text-sm font-semibold">Pipeline Active</span>
                                 </div>
                             )}
                         </div>
                     </div>
 
                     {/* Tab Navigation */}
-                    <div className="mt-6">
-                        <nav className="flex space-x-8">
+                    <div className="mt-8">
+                        <nav className="flex space-x-2 bg-white/40 backdrop-blur-sm rounded-2xl p-2 border border-white/30">
                             {tabs.map((tab) => {
                                 const Icon = tab.icon;
                                 const isActive = activeTab === tab.id;
@@ -190,17 +198,17 @@ const Dashboard = () => {
                                         key={tab.id}
                                         onClick={() => !isDisabled && setActiveTab(tab.id)}
                                         disabled={isDisabled}
-                                        className={`flex items-center py-2 px-1 border-b-2 font-medium text-sm transition-colors ${isActive
-                                            ? 'border-blue-500 text-blue-600'
-                                            : isDisabled
-                                                ? 'border-transparent text-gray-400 cursor-not-allowed'
-                                                : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                                        className={`flex items-center flex-1 px-6 py-4 rounded-xl font-medium text-sm transition-all duration-300 ${isActive
+                                                ? `bg-gradient-to-r ${tab.gradient} text-white shadow-lg transform scale-105`
+                                                : isDisabled
+                                                    ? 'text-slate-400 cursor-not-allowed opacity-50'
+                                                    : 'text-slate-600 hover:text-slate-800 hover:bg-white/60 hover:shadow-md'
                                             }`}
                                     >
-                                        <Icon className="w-5 h-5 mr-2" />
+                                        <Icon className={`w-5 h-5 mr-3 ${isActive ? 'text-white' : ''}`} />
                                         <div className="text-left">
-                                            <div>{tab.name}</div>
-                                            <div className="text-xs font-normal opacity-75">
+                                            <div className="font-semibold">{tab.name}</div>
+                                            <div className={`text-xs mt-0.5 ${isActive ? 'text-white/80' : 'text-slate-500'}`}>
                                                 {tab.description}
                                             </div>
                                         </div>

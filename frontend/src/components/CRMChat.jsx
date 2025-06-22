@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Send, Upload, FileText, CheckCircle, AlertCircle } from 'lucide-react';
+import { Send, Upload, FileText, CheckCircle, AlertCircle, Bot, User } from 'lucide-react';
 
 const CRMChat = ({ onPipelineComplete }) => {
     const [messages, setMessages] = useState([]);
@@ -239,28 +239,33 @@ const CRMChat = ({ onPipelineComplete }) => {
     };
 
     return (
-        <div className="flex flex-col h-full bg-gray-50">
+        <div className="flex flex-col h-full bg-gradient-to-br from-slate-50 via-white to-blue-50">
             {/* Header */}
-            <div className="bg-white shadow-sm border-b px-6 py-4">
+            <div className="bg-white/80 backdrop-blur-xl shadow-sm border-b border-white/20 px-8 py-6">
                 <div className="flex items-center justify-between">
-                    <div>
-                        <h1 className="text-xl font-semibold text-gray-900">
-                            CRM Stage Builder Agent
-                        </h1>
-                        <p className="text-sm text-gray-500">
-                            Create your custom sales pipeline
-                        </p>
+                    <div className="flex items-center space-x-4">
+                        <div className="flex items-center justify-center w-10 h-10 bg-gradient-to-br from-blue-500 to-purple-600 rounded-xl shadow-md">
+                            <Bot className="w-5 h-5 text-white" />
+                        </div>
+                        <div>
+                            <h1 className="text-xl font-bold bg-gradient-to-r from-slate-800 to-slate-600 bg-clip-text text-transparent">
+                                CRM Stage Builder Agent
+                            </h1>
+                            <p className="text-slate-600 font-medium">
+                                Create your custom sales pipeline
+                            </p>
+                        </div>
                     </div>
-                    <div className="flex items-center space-x-2">
+                    <div className="flex items-center space-x-4">
                         {pipelineComplete && (
-                            <div className="flex items-center text-green-600">
-                                <CheckCircle className="w-5 h-5 mr-1" />
-                                <span className="text-sm font-medium">Pipeline Complete</span>
+                            <div className="flex items-center bg-gradient-to-r from-emerald-50 to-green-50 text-emerald-700 px-4 py-2 rounded-xl border border-emerald-200/50 shadow-sm">
+                                <CheckCircle className="w-4 h-4 mr-2" />
+                                <span className="text-sm font-semibold">Pipeline Complete</span>
                             </div>
                         )}
                         {sessionId && (
-                            <div className="text-xs text-gray-400">
-                                Session: {sessionId.slice(-8)}
+                            <div className="bg-slate-100/60 backdrop-blur-sm text-slate-600 px-3 py-1.5 rounded-lg border border-slate-200/50">
+                                <span className="text-xs font-mono">Session: {sessionId.slice(-8)}</span>
                             </div>
                         )}
                     </div>
@@ -268,31 +273,53 @@ const CRMChat = ({ onPipelineComplete }) => {
             </div>
 
             {/* Messages Area */}
-            <div className="flex-1 overflow-y-auto px-6 py-4 space-y-4" style={{ minHeight: 0 }}>
+            <div className="flex-1 overflow-y-auto px-8 py-6 space-y-6" style={{ minHeight: 0 }}>
                 {messages.map((message) => (
                     <div
                         key={message.id}
-                        className={`flex ${message.type === 'user' ? 'justify-end' : 'justify-start'
-                            }`}
+                        className={`flex ${message.type === 'user' ? 'justify-end' : 'justify-start'}`}
                     >
-                        <div
-                            className={`max-w-3xl rounded-lg px-4 py-3 ${message.type === 'user'
-                                ? 'bg-blue-600 text-white'
-                                : message.type === 'agent'
-                                    ? 'bg-white border shadow-sm text-gray-900'
-                                    : message.type === 'system'
-                                        ? 'bg-green-50 border border-green-200 text-green-800'
-                                        : 'bg-red-50 border border-red-200 text-red-800'
-                                }`}
-                        >
-                            <div className="whitespace-pre-wrap">{message.content}</div>
+                        <div className={`flex items-start space-x-3 max-w-4xl ${message.type === 'user' ? 'flex-row-reverse space-x-reverse' : ''}`}>
+                            {/* Avatar */}
+                            <div className={`flex-shrink-0 flex items-center justify-center w-8 h-8 rounded-xl shadow-sm ${message.type === 'user'
+                                    ? 'bg-gradient-to-br from-blue-500 to-blue-600'
+                                    : message.type === 'agent'
+                                        ? 'bg-gradient-to-br from-purple-500 to-purple-600'
+                                        : message.type === 'system'
+                                            ? 'bg-gradient-to-br from-emerald-500 to-emerald-600'
+                                            : 'bg-gradient-to-br from-red-500 to-red-600'
+                                }`}>
+                                {message.type === 'user' ? (
+                                    <User className="w-4 h-4 text-white" />
+                                ) : message.type === 'system' ? (
+                                    <CheckCircle className="w-4 h-4 text-white" />
+                                ) : message.type === 'error' ? (
+                                    <AlertCircle className="w-4 h-4 text-white" />
+                                ) : (
+                                    <Bot className="w-4 h-4 text-white" />
+                                )}
+                            </div>
+
+                            {/* Message Bubble */}
                             <div
-                                className={`text-xs mt-2 ${message.type === 'user'
-                                    ? 'text-blue-100'
-                                    : 'text-gray-500'
+                                className={`relative px-6 py-4 rounded-2xl shadow-sm border backdrop-blur-sm ${message.type === 'user'
+                                        ? 'bg-gradient-to-br from-blue-600 to-blue-700 text-white border-blue-500/20'
+                                        : message.type === 'agent'
+                                            ? 'bg-white/80 border-slate-200/50 text-slate-800'
+                                            : message.type === 'system'
+                                                ? 'bg-gradient-to-br from-emerald-50 to-green-50 border-emerald-200/50 text-emerald-800'
+                                                : 'bg-gradient-to-br from-red-50 to-pink-50 border-red-200/50 text-red-800'
                                     }`}
                             >
-                                {formatTimestamp(message.timestamp)}
+                                <div className="whitespace-pre-wrap leading-relaxed">{message.content}</div>
+                                <div
+                                    className={`text-xs mt-3 ${message.type === 'user'
+                                            ? 'text-blue-100'
+                                            : 'text-slate-500'
+                                        }`}
+                                >
+                                    {formatTimestamp(message.timestamp)}
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -300,10 +327,19 @@ const CRMChat = ({ onPipelineComplete }) => {
 
                 {isLoading && (
                     <div className="flex justify-start">
-                        <div className="bg-white border shadow-sm rounded-lg px-4 py-3">
-                            <div className="flex items-center space-x-2">
-                                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-600"></div>
-                                <span className="text-gray-600">Agent is thinking...</span>
+                        <div className="flex items-start space-x-3">
+                            <div className="flex items-center justify-center w-8 h-8 bg-gradient-to-br from-purple-500 to-purple-600 rounded-xl shadow-sm">
+                                <Bot className="w-4 h-4 text-white" />
+                            </div>
+                            <div className="bg-white/80 backdrop-blur-sm border border-slate-200/50 rounded-2xl px-6 py-4 shadow-sm">
+                                <div className="flex items-center space-x-3">
+                                    <div className="flex space-x-1">
+                                        <div className="w-2 h-2 bg-gradient-to-r from-purple-500 to-blue-500 rounded-full animate-bounce"></div>
+                                        <div className="w-2 h-2 bg-gradient-to-r from-purple-500 to-blue-500 rounded-full animate-bounce" style={{ animationDelay: '0.1s' }}></div>
+                                        <div className="w-2 h-2 bg-gradient-to-r from-purple-500 to-blue-500 rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></div>
+                                    </div>
+                                    <span className="text-slate-600 font-medium">Agent is thinking...</span>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -314,15 +350,17 @@ const CRMChat = ({ onPipelineComplete }) => {
 
             {/* Uploaded Files Display */}
             {uploadedFiles.length > 0 && (
-                <div className="px-6 py-2 bg-blue-50 border-t border-blue-200">
-                    <div className="flex flex-wrap gap-2">
+                <div className="px-8 py-4 bg-blue-50/60 backdrop-blur-sm border-t border-blue-200/50">
+                    <div className="flex flex-wrap gap-3">
                         {uploadedFiles.map((file, index) => (
                             <div
                                 key={index}
-                                className="flex items-center space-x-2 bg-blue-100 rounded-lg px-3 py-1"
+                                className="flex items-center space-x-3 bg-white/80 backdrop-blur-sm rounded-xl px-4 py-3 border border-blue-200/50 shadow-sm"
                             >
-                                <FileText className="w-4 h-4 text-blue-600" />
-                                <span className="text-sm text-blue-800">{file.name}</span>
+                                <div className="flex items-center justify-center w-8 h-8 bg-gradient-to-br from-blue-500 to-blue-600 rounded-lg">
+                                    <FileText className="w-4 h-4 text-white" />
+                                </div>
+                                <span className="text-sm font-medium text-blue-800">{file.name}</span>
                             </div>
                         ))}
                     </div>
@@ -330,23 +368,23 @@ const CRMChat = ({ onPipelineComplete }) => {
             )}
 
             {/* Input Area */}
-            <div className="flex-shrink-0 bg-white border-t px-6 py-4">
+            <div className="flex-shrink-0 bg-white/80 backdrop-blur-xl border-t border-white/20 px-8 py-6">
                 <div className="flex items-end space-x-4">
                     <button
                         onClick={() => fileInputRef.current?.click()}
-                        className="flex-shrink-0 p-2 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-lg transition-colors"
+                        className="flex-shrink-0 flex items-center justify-center w-12 h-12 bg-gradient-to-br from-slate-100 to-slate-200 hover:from-slate-200 hover:to-slate-300 text-slate-600 hover:text-slate-800 rounded-xl transition-all duration-200 shadow-sm hover:shadow-md border border-slate-200/50"
                         title="Upload files (PDF, DOCX, CSV)"
                     >
                         <Upload className="w-5 h-5" />
                     </button>
 
-                    <div className="flex-1">
+                    <div className="flex-1 relative">
                         <textarea
                             value={inputMessage}
                             onChange={(e) => setInputMessage(e.target.value)}
                             onKeyPress={handleKeyPress}
                             placeholder="Describe your business, upload files, or ask questions about your sales pipeline..."
-                            className="w-full px-4 py-3 border border-gray-300 rounded-lg resize-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
+                            className="w-full px-6 py-4 bg-white/80 backdrop-blur-sm border border-slate-200/50 rounded-2xl resize-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500/50 outline-none transition-all duration-200 shadow-sm hover:shadow-md leading-relaxed"
                             rows="2"
                             disabled={isLoading}
                         />
@@ -355,7 +393,7 @@ const CRMChat = ({ onPipelineComplete }) => {
                     <button
                         onClick={handleSendMessage}
                         disabled={!inputMessage.trim() || isLoading}
-                        className="flex-shrink-0 p-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                        className="flex-shrink-0 flex items-center justify-center w-12 h-12 bg-gradient-to-br from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white rounded-xl disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 shadow-md hover:shadow-lg transform hover:scale-105 disabled:transform-none"
                     >
                         <Send className="w-5 h-5" />
                     </button>
@@ -370,8 +408,8 @@ const CRMChat = ({ onPipelineComplete }) => {
                     className="hidden"
                 />
 
-                <div className="mt-2 text-xs text-gray-500">
-                    Supported files: PDF, DOCX, CSV • Press Enter to send • Shift+Enter for new line
+                <div className="mt-4 text-xs text-slate-500 bg-slate-50/60 backdrop-blur-sm px-4 py-2 rounded-xl border border-slate-200/50">
+                    <span className="font-medium">Supported files:</span> PDF, DOCX, CSV • Press <kbd className="px-1.5 py-0.5 bg-slate-200/80 rounded text-xs">Enter</kbd> to send • <kbd className="px-1.5 py-0.5 bg-slate-200/80 rounded text-xs">Shift+Enter</kbd> for new line
                 </div>
             </div>
         </div>
