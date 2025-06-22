@@ -20,6 +20,22 @@ from .models import PipelinePayload, StageConfig, LeadData, BusinessData
 
 # build_ready_state will be imported conditionally when needed
 
+# Import handle_upload_and_patch_state from utils
+def _import_handle_upload_and_patch_state():
+    """Import handle_upload_and_patch_state from utils"""
+    try:
+        import importlib.util
+        utils_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'utils', 'utils.py')
+        spec = importlib.util.spec_from_file_location("utils", utils_path)
+        utils_module = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(utils_module)
+        return utils_module.handle_upload_and_patch_state
+    except Exception as e:
+        print(f"❌ Error importing handle_upload_and_patch_state: {str(e)}")
+        raise
+
+handle_upload_and_patch_state = _import_handle_upload_and_patch_state()
+
 # Load environment variables
 load_dotenv()
 
