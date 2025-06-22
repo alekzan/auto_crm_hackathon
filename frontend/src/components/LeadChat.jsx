@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Send, User, Bot, CheckCircle, AlertCircle, ArrowRight, Building, Phone, Mail } from 'lucide-react';
+import API_BASE_URL from '../config';
 
 const LeadChat = ({ existingSession, existingMessages, onSessionCreated, onMessagesUpdate }) => {
     const [messages, setMessages] = useState(existingMessages || []);
@@ -68,7 +69,8 @@ const LeadChat = ({ existingSession, existingMessages, onSessionCreated, onMessa
         try {
             setIsLoading(true);
 
-            const response = await fetch('http://localhost:8001/lead/create', {
+            const url = `${API_BASE_URL}/lead/create`;
+            const response = await fetch(url, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -129,7 +131,8 @@ const LeadChat = ({ existingSession, existingMessages, onSessionCreated, onMessa
         setIsLoading(true);
 
         try {
-            const response = await fetch('http://localhost:8001/lead/chat', {
+            const url = `${API_BASE_URL}/lead/chat`;
+            const response = await fetch(url, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',

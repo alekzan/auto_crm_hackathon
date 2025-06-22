@@ -3,6 +3,8 @@ import { MessageSquare, LayoutDashboard, RefreshCw, Users, RotateCcw, Target, Sp
 import CRMChat from './CRMChat';
 import KanbanBoard from './KanbanBoard';
 import LeadChat from './LeadChat';
+import { Button, Spin, Alert, message } from 'antd';
+import API_BASE_URL from '../config';
 
 const Dashboard = () => {
     const [activeTab, setActiveTab] = useState('chat');
@@ -10,6 +12,7 @@ const Dashboard = () => {
     const [isLoading, setIsLoading] = useState(false);
     const [leadSession, setLeadSession] = useState(null);
     const [leadMessages, setLeadMessages] = useState([]);
+    const [resetting, setResetting] = useState(false);
 
     // Reset state function for MVP
     const resetState = async () => {
@@ -20,10 +23,11 @@ const Dashboard = () => {
 
             // Optional: Call backend to clear state (if implemented)
             try {
-                const response = await fetch('http://localhost:8001/admin/reset-state', {
-                    method: 'POST'
-                });
+                setResetting(true);
+                const url = `${API_BASE_URL}/admin/reset-state`;
+                const response = await fetch(url, { method: 'POST' });
                 if (response.ok) {
+                    message.success('Application state has been reset!');
                     console.log('✅ Backend state reset successfully');
                 } else {
                     console.log('⚠️ Backend state reset failed, but frontend state cleared');
@@ -41,7 +45,8 @@ const Dashboard = () => {
         setIsLoading(true);
         try {
             console.log('🔄 Fetching pipeline data from backend...');
-            const response = await fetch('http://localhost:8001/state/pipeline');
+            const url = `${API_BASE_URL}/state/pipeline`;
+            const response = await fetch(url);
 
             if (response.ok) {
                 const data = await response.json();
@@ -199,10 +204,10 @@ const Dashboard = () => {
                                         onClick={() => !isDisabled && setActiveTab(tab.id)}
                                         disabled={isDisabled}
                                         className={`flex items-center flex-1 px-6 py-4 rounded-xl font-medium text-sm transition-all duration-300 ${isActive
-                                                ? `bg-gradient-to-r ${tab.gradient} text-white shadow-lg transform scale-105`
-                                                : isDisabled
-                                                    ? 'text-slate-400 cursor-not-allowed opacity-50'
-                                                    : 'text-slate-600 hover:text-slate-800 hover:bg-white/60 hover:shadow-md'
+                                            ? `bg-gradient-to-r ${tab.gradient} text-white shadow-lg transform scale-105`
+                                            : isDisabled
+                                                ? 'text-slate-400 cursor-not-allowed opacity-50'
+                                                : 'text-slate-600 hover:text-slate-800 hover:bg-white/60 hover:shadow-md'
                                             }`}
                                     >
                                         <Icon className={`w-5 h-5 mr-3 ${isActive ? 'text-white' : ''}`} />

@@ -1,0 +1,23 @@
+# This file tells gcloud what to ignore when deploying.
+
+# Always ignore node_modules and local virtual environments
+node_modules/
+.venv/
+
+# Ignore Python bytecode and cache
+__pycache__/
+*.pyc
+
+# Ignore IDE and OS-specific files
+.vscode/
+.idea/
+.DS_Store
+
+# Don't ignore the frontend directory or the requirements file.
+# The '!' prefix means "do not ignore".
+# We need to be explicit to override any potential .gitignore rules.
+!/frontend/
+!/requirements.txt
+!/backend/
+!/src/
+!/utils/ 

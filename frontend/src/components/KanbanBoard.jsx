@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Plus, Users, Target, ArrowRight, RefreshCw } from 'lucide-react';
+import API_BASE_URL from '../config';
 
 const KanbanBoard = ({ pipelineData }) => {
     const [stages, setStages] = useState([]);
@@ -59,7 +60,8 @@ const KanbanBoard = ({ pipelineData }) => {
             setError(null);
             console.log('🔄 Fetching leads from backend...');
 
-            const response = await fetch('http://localhost:8001/state/leads');
+            const url = `${API_BASE_URL}/state/leads`;
+            const response = await fetch(url);
             if (response.ok) {
                 const leadsData = await response.json();
                 console.log('📊 Leads data loaded:', leadsData);

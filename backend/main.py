@@ -13,7 +13,8 @@ from datetime import datetime
 
 from fastapi import FastAPI, HTTPException, UploadFile, File, WebSocket, WebSocketDisconnect
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import JSONResponse
+from fastapi.responses import JSONResponse, FileResponse
+from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 from dotenv import load_dotenv
 
@@ -58,6 +59,9 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+# Mount static files for the frontend
+app.mount("/assets", StaticFiles(directory="frontend/dist/assets"), name="assets")
+
 # Initialize managers
 crm_agent = CRMAgentManager()
 omni_agent = OmniAgentManager()
@@ -81,14 +85,15 @@ async def shutdown_event():
     await state_manager.save_state()
     print("👋 Backend shutting down...")
 
-@app.get("/")
-async def root():
-    """Health check endpoint"""
-    return {
-        "message": "AI-Powered CRM MVP Backend", 
-        "status": "running",
-        "timestamp": datetime.now().isoformat()
-    }
+# This route is commented out as it conflicts with the React app's index.html
+# @app.get("/")
+# async def root():
+#     """Health check endpoint"""
+#     return {
+#         "message": "AI-Powered CRM MVP Backend", 
+#         "status": "running",
+#         "timestamp": datetime.now().isoformat()
+#     }
 
 @app.post("/test/chat")
 async def test_chat(message: ChatMessage) -> ChatResponse:
@@ -851,29 +856,19 @@ async def trigger_pipeline_complete():
 
 @app.post("/admin/reset-state")
 async def reset_state():
-    """
-    Reset the application state for MVP purposes
-    Clears all pipeline, lead, and session data
-    """
-    try:
-        print("🔄 Resetting application state...")
-        
-        # Create a fresh state
-        state_manager.state = ApplicationState()
-        
-        # Save the reset state
-        await state_manager.save_state()
-        
-        print("✅ Application state reset successfully")
-        
-        return {
-            "message": "Application state reset successfully",
-            "timestamp": datetime.now().isoformat()
-        }
-        
-    except Exception as e:
-        logger.error(f"Error resetting state: {str(e)}")
-        raise HTTPException(status_code=500, detail=str(e))
+    """Resets the entire application state"""
+    await state_manager.reset_state()
+    # Also reset agent states if they hold any
+    await crm_agent.reset_session()
+    await omni_agent.reset_all_sessions()
+    
+    await websocket_manager.broadcast_state_reset()
+    return {"message": "Application state reset successfully"}
+
+@app.get("/{catchall:path}", include_in_schema=False)
+async def serve_react_app(catchall: str):
+    """Serve the React app for any path not caught by other routes"""
+    return FileResponse("frontend/dist/index.html")
 
 if __name__ == "__main__":
     import uvicorn

@@ -1,5 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Send, Upload, FileText, CheckCircle, AlertCircle, Bot, User } from 'lucide-react';
+import API_BASE_URL from '../config';
 
 const CRMChat = ({ onPipelineComplete }) => {
     const [messages, setMessages] = useState([]);
@@ -67,7 +68,8 @@ const CRMChat = ({ onPipelineComplete }) => {
         setIsLoading(true);
 
         try {
-            const response = await fetch('http://localhost:8001/owner/chat', {
+            const url = `${API_BASE_URL}/owner/chat`;
+            const response = await fetch(url, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -178,7 +180,8 @@ const CRMChat = ({ onPipelineComplete }) => {
             }
 
             try {
-                const response = await fetch('http://localhost:8001/owner/upload', {
+                const url = `${API_BASE_URL}/owner/upload`;
+                const response = await fetch(url, {
                     method: 'POST',
                     body: formData,
                 });
@@ -282,12 +285,12 @@ const CRMChat = ({ onPipelineComplete }) => {
                         <div className={`flex items-start space-x-3 max-w-4xl ${message.type === 'user' ? 'flex-row-reverse space-x-reverse' : ''}`}>
                             {/* Avatar */}
                             <div className={`flex-shrink-0 flex items-center justify-center w-8 h-8 rounded-xl shadow-sm ${message.type === 'user'
-                                    ? 'bg-gradient-to-br from-blue-500 to-blue-600'
-                                    : message.type === 'agent'
-                                        ? 'bg-gradient-to-br from-purple-500 to-purple-600'
-                                        : message.type === 'system'
-                                            ? 'bg-gradient-to-br from-emerald-500 to-emerald-600'
-                                            : 'bg-gradient-to-br from-red-500 to-red-600'
+                                ? 'bg-gradient-to-br from-blue-500 to-blue-600'
+                                : message.type === 'agent'
+                                    ? 'bg-gradient-to-br from-purple-500 to-purple-600'
+                                    : message.type === 'system'
+                                        ? 'bg-gradient-to-br from-emerald-500 to-emerald-600'
+                                        : 'bg-gradient-to-br from-red-500 to-red-600'
                                 }`}>
                                 {message.type === 'user' ? (
                                     <User className="w-4 h-4 text-white" />
@@ -303,19 +306,19 @@ const CRMChat = ({ onPipelineComplete }) => {
                             {/* Message Bubble */}
                             <div
                                 className={`relative px-6 py-4 rounded-2xl shadow-sm border backdrop-blur-sm ${message.type === 'user'
-                                        ? 'bg-gradient-to-br from-blue-600 to-blue-700 text-white border-blue-500/20'
-                                        : message.type === 'agent'
-                                            ? 'bg-white/80 border-slate-200/50 text-slate-800'
-                                            : message.type === 'system'
-                                                ? 'bg-gradient-to-br from-emerald-50 to-green-50 border-emerald-200/50 text-emerald-800'
-                                                : 'bg-gradient-to-br from-red-50 to-pink-50 border-red-200/50 text-red-800'
+                                    ? 'bg-gradient-to-br from-blue-600 to-blue-700 text-white border-blue-500/20'
+                                    : message.type === 'agent'
+                                        ? 'bg-white/80 border-slate-200/50 text-slate-800'
+                                        : message.type === 'system'
+                                            ? 'bg-gradient-to-br from-emerald-50 to-green-50 border-emerald-200/50 text-emerald-800'
+                                            : 'bg-gradient-to-br from-red-50 to-pink-50 border-red-200/50 text-red-800'
                                     }`}
                             >
                                 <div className="whitespace-pre-wrap leading-relaxed">{message.content}</div>
                                 <div
                                     className={`text-xs mt-3 ${message.type === 'user'
-                                            ? 'text-blue-100'
-                                            : 'text-slate-500'
+                                        ? 'text-blue-100'
+                                        : 'text-slate-500'
                                         }`}
                                 >
                                     {formatTimestamp(message.timestamp)}
