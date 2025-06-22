@@ -34,71 +34,7 @@ const Dashboard = () => {
         }
     };
 
-    // Manual pipeline completion trigger (for development/MVP)
-    const triggerPipelineComplete = async () => {
-        console.log('🔄 Manually triggering pipeline completion check...');
-        setIsLoading(true);
-
-        try {
-            const response = await fetch('http://localhost:8001/admin/trigger-pipeline-complete', {
-                method: 'POST'
-            });
-
-            if (response.ok) {
-                const result = await response.json();
-                console.log('✅ Pipeline completion trigger result:', result);
-
-                // Check if any pipelines were completed
-                const completedSessions = result.results?.filter(r => r.status === 'completed') || [];
-                if (completedSessions.length > 0) {
-                    console.log(`🎉 ${completedSessions.length} pipeline(s) completed!`);
-                    // Refresh pipeline data
-                    await fetchPipelineData();
-                    setActiveTab('kanban'); // Switch to kanban view
-                } else {
-                    console.log('⚠️ No completed pipelines found');
-                }
-            } else {
-                console.error('❌ Pipeline completion trigger failed');
-            }
-        } catch (error) {
-            console.error('❌ Error triggering pipeline completion:', error);
-        } finally {
-            setIsLoading(false);
-        }
-    };
-
-    // Extract pipeline from conversations (for when session state is empty)
-    const extractFromConversation = async () => {
-        console.log('🔄 Extracting pipeline from conversation...');
-        setIsLoading(true);
-
-        try {
-            const response = await fetch('http://localhost:8001/admin/extract-from-conversation', {
-                method: 'POST'
-            });
-
-            if (response.ok) {
-                const result = await response.json();
-                console.log('✅ Conversation extraction result:', result);
-
-                if (result.success) {
-                    console.log(`🎉 Pipeline extracted: ${result.business_name} with ${result.total_stages} stages!`);
-                    // Refresh pipeline data
-                    await fetchPipelineData();
-                    setActiveTab('kanban'); // Switch to kanban view
-                } else {
-                    console.log('⚠️ No pipeline data found in conversations');
-                }
-            } else {
-                console.error('❌ Conversation extraction failed');
-            }
-        } catch (error) {
-            console.error('❌ Error extracting from conversation:', error);
-        } finally {
-            setIsLoading(false);
-        }
-    };
+    // Debug functions removed - pipeline completion and extraction is now automatic
 
     // Fetch pipeline data from backend
     const fetchPipelineData = async () => {
@@ -227,25 +163,7 @@ const Dashboard = () => {
                                 Reset State
                             </button>
 
-                            {/* Manual Pipeline Complete Trigger (Development) */}
-                            <button
-                                onClick={triggerPipelineComplete}
-                                disabled={isLoading}
-                                className="flex items-center px-3 py-2 text-sm text-purple-600 hover:text-purple-800 hover:bg-purple-50 rounded-lg transition-colors"
-                            >
-                                <Target className="w-4 h-4 mr-2" />
-                                Complete Pipeline
-                            </button>
-
-                            {/* Extract from Conversation (Development) */}
-                            <button
-                                onClick={extractFromConversation}
-                                disabled={isLoading}
-                                className="flex items-center px-3 py-2 text-sm text-orange-600 hover:text-orange-800 hover:bg-orange-50 rounded-lg transition-colors"
-                            >
-                                <MessageSquare className="w-4 h-4 mr-2" />
-                                Extract Pipeline
-                            </button>
+                            {/* Debug buttons removed - functionality is now automatic */}
 
                             {/* Pipeline Status */}
                             {pipelineData && (

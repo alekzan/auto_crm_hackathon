@@ -93,7 +93,7 @@ const LeadChat = ({ existingSession, existingMessages, onSessionCreated, onMessa
             setMessages([{
                 id: Date.now(),
                 sender: 'agent',
-                content: `Welcome to ${sessionData.business_name}! I'm here to help you through our ${sessionData.total_stages}-stage process. Currently, you're in Stage ${sessionData.current_stage}: ${sessionData.current_stage_name}. How can I assist you today?`,
+                content: `Welcome to ${sessionData.business_name}! How can I assist you today?`,
                 timestamp: new Date().toISOString(),
                 leadData: null
             }]);

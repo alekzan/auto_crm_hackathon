@@ -2,14 +2,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import { Send, Upload, FileText, CheckCircle, AlertCircle } from 'lucide-react';
 
 const CRMChat = ({ onPipelineComplete }) => {
-    const [messages, setMessages] = useState([
-        {
-            id: 1,
-            type: 'agent',
-            content: 'Hello! I\'m your CRM Stage Builder Agent. I\'ll help you create a custom sales pipeline for your business. Let\'s start by telling me about your business - what\'s the name and what do you do?',
-            timestamp: new Date().toISOString()
-        }
-    ]);
+    const [messages, setMessages] = useState([]);
     const [inputMessage, setInputMessage] = useState('');
     const [isLoading, setIsLoading] = useState(false);
     const [sessionId, setSessionId] = useState(null);
@@ -23,9 +16,28 @@ const CRMChat = ({ onPipelineComplete }) => {
         messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
     };
 
+    // Only auto-scroll when there are multiple messages (not for the initial message)
     useEffect(() => {
-        scrollToBottom();
+        if (messages.length > 1) {
+            scrollToBottom();
+        }
     }, [messages]);
+
+    // Add initial welcome message with a slight delay to prevent fast flash
+    useEffect(() => {
+        const timer = setTimeout(() => {
+            if (messages.length === 0) {
+                setMessages([{
+                    id: 1,
+                    type: 'agent',
+                    content: 'Welcome! I\'m your AI CRM Builder.',
+                    timestamp: new Date().toISOString()
+                }]);
+            }
+        }, 500); // 500ms delay to prevent flash
+
+        return () => clearTimeout(timer);
+    }, []);
 
     useEffect(() => {
         if (messages.length > 0) {
@@ -227,7 +239,7 @@ const CRMChat = ({ onPipelineComplete }) => {
     };
 
     return (
-        <div className="flex flex-col h-screen bg-gray-50">
+        <div className="flex flex-col h-full bg-gray-50">
             {/* Header */}
             <div className="bg-white shadow-sm border-b px-6 py-4">
                 <div className="flex items-center justify-between">
@@ -256,7 +268,7 @@ const CRMChat = ({ onPipelineComplete }) => {
             </div>
 
             {/* Messages Area */}
-            <div className="flex-1 overflow-y-auto px-6 py-4 space-y-4">
+            <div className="flex-1 overflow-y-auto px-6 py-4 space-y-4" style={{ minHeight: 0 }}>
                 {messages.map((message) => (
                     <div
                         key={message.id}
@@ -318,7 +330,7 @@ const CRMChat = ({ onPipelineComplete }) => {
             )}
 
             {/* Input Area */}
-            <div className="bg-white border-t px-6 py-4">
+            <div className="flex-shrink-0 bg-white border-t px-6 py-4">
                 <div className="flex items-end space-x-4">
                     <button
                         onClick={() => fileInputRef.current?.click()}
