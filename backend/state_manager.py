@@ -291,4 +291,28 @@ class StateManager:
     
     async def get_active_sessions(self) -> Dict[str, Dict[str, Any]]:
         """Get all active sessions"""
-        return self.state.active_sessions 
+        return self.state.active_sessions
+
+    def save_session_state(self, session_state: Dict[str, Any]) -> None:
+        """Save complete session state for ready state preparation"""
+        self.state.session_state = session_state
+        # Create a task to save state asynchronously without blocking
+        import asyncio
+        try:
+            # Try to get the current event loop
+            loop = asyncio.get_event_loop()
+            if loop.is_running():
+                # If loop is running, create a task
+                asyncio.create_task(self.save_state())
+            else:
+                # If no loop is running, run the coroutine
+                asyncio.run(self.save_state())
+        except RuntimeError:
+            # Fallback: just update the state without saving to file immediately
+            # The state will be saved on the next auto-save or shutdown
+            pass
+        print("Session state saved")
+
+    def get_session_state(self) -> Dict[str, Any]:
+        """Get the complete session state"""
+        return self.state.session_state 

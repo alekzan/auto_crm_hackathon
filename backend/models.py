@@ -125,6 +125,7 @@ class ApplicationState(BaseModel):
     lead_conversations: Dict[str, List[Dict[str, str]]] = Field(default_factory=dict)
     active_sessions: Dict[str, Dict[str, Any]] = Field(default_factory=dict)
     kanban_board: KanbanBoard = Field(default_factory=KanbanBoard)
+    session_state: Dict[str, Any] = Field(default_factory=dict, description="Complete session state for ready state preparation")
     last_updated: str = Field(default_factory=lambda: datetime.now().isoformat())
 
 # API Response Models

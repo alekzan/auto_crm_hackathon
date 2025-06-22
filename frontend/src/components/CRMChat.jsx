@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Send, Upload, FileText, CheckCircle, AlertCircle } from 'lucide-react';
 
-const CRMChat = () => {
+const CRMChat = ({ onPipelineComplete }) => {
     const [messages, setMessages] = useState([
         {
             id: 1,
@@ -26,6 +26,19 @@ const CRMChat = () => {
     useEffect(() => {
         scrollToBottom();
     }, [messages]);
+
+    useEffect(() => {
+        if (messages.length > 0) {
+            const lastMessage = messages[messages.length - 1];
+            // Check if the last message is a system message with pipeline_payload
+            if (lastMessage.type === 'system' && lastMessage.pipeline_payload) {
+                console.log('🎉 Pipeline completed, notifying parent');
+                if (onPipelineComplete) {
+                    onPipelineComplete(lastMessage.pipeline_payload);
+                }
+            }
+        }
+    }, [messages, onPipelineComplete]);
 
     const handleSendMessage = async () => {
         if (!inputMessage.trim() || isLoading) return;
@@ -62,6 +75,16 @@ const CRMChat = () => {
             }
 
             const data = await response.json();
+            console.log('📨 Backend response:', {
+                pipeline_complete: data.pipeline_complete,
+                has_payload: !!data.pipeline_payload,
+                payload_keys: data.pipeline_payload ? Object.keys(data.pipeline_payload) : null,
+                payload_sample: data.pipeline_payload ? {
+                    biz_name: data.pipeline_payload.biz_name,
+                    total_stages: data.pipeline_payload.total_stages,
+                    stage_1_stage_name: data.pipeline_payload.stage_1_stage_name
+                } : null
+            });
 
             // Update session ID if this is the first message
             if (!sessionId && data.session_id) {
@@ -82,7 +105,7 @@ const CRMChat = () => {
             if (data.pipeline_complete) {
                 setPipelineComplete(true);
 
-                // Add completion message
+                // Add completion message with pipeline payload
                 const completionMessage = {
                     id: Date.now() + 2,
                     type: 'system',
@@ -92,6 +115,14 @@ const CRMChat = () => {
                 };
 
                 setMessages(prev => [...prev, completionMessage]);
+
+                // Trigger onPipelineComplete when pipeline is complete (even without payload)
+                if (onPipelineComplete) {
+                    console.log('🎉 Pipeline completed, notifying parent immediately');
+                    // If we have payload data, use it; otherwise, trigger with basic completion info
+                    const completionData = data.pipeline_payload || { pipeline_complete: true };
+                    onPipelineComplete(completionData);
+                }
             }
 
             // Clear uploaded files after successful message
@@ -100,10 +131,21 @@ const CRMChat = () => {
         } catch (error) {
             console.error('Error sending message:', error);
 
+            let errorContent = 'Sorry, there was an error processing your message. Please try again.';
+
+            // Handle specific error types
+            if (error.message.includes('status: 429')) {
+                errorContent = '⏱️ Rate limit exceeded. Please wait a minute before sending another message. Google Cloud has a limit of 10 requests per minute.';
+            } else if (error.message.includes('status: 500')) {
+                errorContent = '🔧 Server error occurred. This might be due to rate limiting or a temporary issue. Please wait a moment and try again.';
+            } else if (error.message.includes('status: 404')) {
+                errorContent = '❓ Service not found. Please make sure the backend server is running.';
+            }
+
             const errorMessage = {
                 id: Date.now() + 1,
                 type: 'error',
-                content: 'Sorry, there was an error processing your message. Please try again.',
+                content: errorContent,
                 timestamp: new Date().toISOString()
             };
 
@@ -223,19 +265,19 @@ const CRMChat = () => {
                     >
                         <div
                             className={`max-w-3xl rounded-lg px-4 py-3 ${message.type === 'user'
-                                    ? 'bg-blue-600 text-white'
-                                    : message.type === 'agent'
-                                        ? 'bg-white border shadow-sm'
-                                        : message.type === 'system'
-                                            ? 'bg-green-50 border border-green-200 text-green-800'
-                                            : 'bg-red-50 border border-red-200 text-red-800'
+                                ? 'bg-blue-600 text-white'
+                                : message.type === 'agent'
+                                    ? 'bg-white border shadow-sm'
+                                    : message.type === 'system'
+                                        ? 'bg-green-50 border border-green-200 text-green-800'
+                                        : 'bg-red-50 border border-red-200 text-red-800'
                                 }`}
                         >
                             <div className="whitespace-pre-wrap">{message.content}</div>
                             <div
                                 className={`text-xs mt-2 ${message.type === 'user'
-                                        ? 'text-blue-100'
-                                        : 'text-gray-500'
+                                    ? 'text-blue-100'
+                                    : 'text-gray-500'
                                     }`}
                             >
                                 {formatTimestamp(message.timestamp)}
