@@ -59,8 +59,8 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Mount static files for the frontend assets (commented out for local development)
-# app.mount("/assets", StaticFiles(directory="frontend/dist/assets"), name="assets")
+# Mount static files for the frontend assets
+app.mount("/assets", StaticFiles(directory="frontend/dist/assets"), name="assets")
 
 # Initialize managers
 crm_agent = CRMAgentManager()
@@ -85,15 +85,15 @@ async def shutdown_event():
     await state_manager.save_state()
     print("👋 Backend shutting down...")
 
-# Uncomment the health check for local development
-@app.get("/")
-async def root():
-    """Health check endpoint"""
-    return {
-        "message": "AI-Powered CRM MVP Backend", 
-        "status": "running",
-        "timestamp": datetime.now().isoformat()
-    }
+# Health check endpoint (commented out for production deployment)
+# @app.get("/")
+# async def root():
+#     """Health check endpoint"""
+#     return {
+#         "message": "AI-Powered CRM MVP Backend", 
+#         "status": "running",
+#         "timestamp": datetime.now().isoformat()
+#     }
 
 @app.post("/test/chat")
 async def test_chat(message: ChatMessage) -> ChatResponse:
@@ -865,11 +865,11 @@ async def reset_state():
     await websocket_manager.broadcast_state_reset()
     return {"message": "Application state reset successfully"}
 
-# Commented out for local development - only needed for production deployment
-# @app.get("/{catchall:path}", include_in_schema=False)
-# async def serve_react_app(catchall: str):
-#     """Serve the React app for any path not caught by other routes"""
-#     return FileResponse("frontend/dist/index.html")
+# Serve the React app for any path not caught by other routes (production deployment)
+@app.get("/{catchall:path}", include_in_schema=False)
+async def serve_react_app(catchall: str):
+    """Serve the React app for any path not caught by other routes"""
+    return FileResponse("frontend/dist/index.html")
 
 if __name__ == "__main__":
     import uvicorn
