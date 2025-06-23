@@ -21,6 +21,11 @@ const Dashboard = () => {
             setPipelineData(null);
             setActiveTab('chat');
 
+            // Clear Lead Chat state
+            setLeadSession(null);
+            setLeadMessages([]);
+            console.log('🧹 Cleared lead session and messages');
+
             // Optional: Call backend to clear state (if implemented)
             try {
                 setResetting(true);
@@ -34,6 +39,8 @@ const Dashboard = () => {
                 }
             } catch (error) {
                 console.log('⚠️ Could not reset backend state:', error.message);
+            } finally {
+                setResetting(false);
             }
         }
     };

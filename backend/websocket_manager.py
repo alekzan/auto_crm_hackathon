@@ -118,7 +118,17 @@ class WebSocketManager:
             "message": f"Lead updated: {lead.name} (Stage {lead.stage})"
         })
         
-        print(f"�� Broadcasted lead update: {lead.name}")
+        print(f"📡 Broadcasted lead update: {lead.name}")
+    
+    async def broadcast_state_reset(self):
+        """Broadcast state reset to all clients"""
+        await self.broadcast({
+            "type": "state_reset",
+            "message": "Application state has been reset",
+            "timestamp": datetime.now().isoformat()
+        })
+        
+        print(f"📡 Broadcasted state reset to all clients")
     
     def get_connection_count(self) -> int:
         """Get number of active connections"""

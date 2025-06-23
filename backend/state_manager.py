@@ -326,4 +326,20 @@ class StateManager:
             return session_state
         else:
             print("⚠️ No ready state available - pipeline not completed")
-            return None 
+            return None
+    
+    async def reset_state(self):
+        """Reset the entire application state"""
+        print(f"🔄 Resetting application state...")
+        print(f"   - Clearing {len(self.state.leads)} leads")
+        print(f"   - Clearing {len(self.state.owner_conversations)} owner conversations")
+        print(f"   - Clearing {len(self.state.lead_conversations)} lead conversation sessions")
+        print(f"   - Clearing {len(self.state.active_sessions)} active sessions")
+        
+        # Reset to fresh state
+        self.state = ApplicationState()
+        
+        # Save the reset state
+        await self.save_state()
+        
+        print("✅ Application state reset successfully") 
